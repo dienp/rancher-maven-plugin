@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>maven-plugin</groupId>
-	<artifactId>rancher-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>rancher-maven-plugin</artifactId>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>rancher-api</name>

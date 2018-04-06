@@ -1,9 +1,9 @@
 package rancher;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -14,74 +14,66 @@ import rancher.util.Util;
 public class RancherAPIConnectionMojo extends AbstractMojo {
 
 	@Parameter(property = "rancher.root")
-	String rancherRoot;
+	private String rancherUrl;
 
 	@Parameter(property = "rancher.username")
-	String username;
+	private String username;
 
 	@Parameter(property = "rancher.password")
-	String password;
+	private String password;
 
 	@Parameter(property = "service.upgrade.timeout")
-	Integer serviceTimeout;
-	
-	@Parameter(property = "service.upgrade.data")
-	String upgradePostData;
+	private Long upgradeTimeout;
+
+	@Parameter(property = "docker.image")
+	private String dockerImage;
+
+	private static final Logger LOGGER = Logger.getLogger(RancherAPIConnectionMojo.class);
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		rancherRoot = Util.escapeSlash(rancherRoot);
-		upgradePostData = Util.escapeSlash(upgradePostData);
-		String upgradeURL = Util.constructURL(rancherRoot, Constant.Action.UPGRAGE);
-		String finishUpgradeURL = Util.constructURL(rancherRoot, Constant.Action.FINISH_UPGRAGE);
-		String getStateURL = Util.constructURL(rancherRoot, null);
+		rancherUrl = rancherUrl.replace("\\", "/");
+		String url = Constant.PROTOCOL + rancherUrl;
+		String upgradeURL = url + Constant.Action.UPGRAGE;
+		String finishUpgradeURL = url + Constant.Action.FINISH_UPGRAGE;
+		String rollbackURL = url + Constant.Action.ROLLBACK;
 		String authToken = Util.getBasicAuthToken(username, password);
-		
-		try {
-			String state = Util.findKeyValue(fetchServiceInfoFromRancher(getStateURL, authToken), "state");
-			switch (state) {
-			case Constant.State.ACTIVE:
-				postToRancher(upgradeURL, upgradePostData, authToken);
-				break;
-			case Constant.State.UPGRADED:
-				postToRancher(finishUpgradeURL, "{}", authToken);
-				while (state != Constant.State.UPGRADED) {
-					state = Util.findKeyValue(fetchServiceInfoFromRancher(getStateURL, authToken), "state");
-					Thread.sleep(3000);
-				}
-				postToRancher(upgradeURL, upgradePostData, authToken);
-				break;
-			default:
-				getLog().error("Failed to fetch service status");
-				break;
+		String state = Util.findKeyValue(Util.fetchServiceInfoFromRancher(url, authToken), Constant.KEYWORD_STATE);
+		LOGGER.debug("Initial state = " + state);
+		switch (state) {
+		case Constant.State.ACTIVE:
+			Util.postToRancher(upgradeURL, Util.makePostData(dockerImage), authToken);
+			if (Util.pollingForState(url, authToken, upgradeTimeout, Constant.State.UPGRADED)) {
+				Util.postToRancher(finishUpgradeURL, "{}", authToken);
+			} else {
+				Util.postToRancher(rollbackURL, "{}", authToken);
 			}
-		} catch (InterruptedException e1) {
-			getLog().error("InterruptedException: ", e1);
-			Thread.currentThread().interrupt();
+			break;
+		case Constant.State.UPGRADED:
+			Util.postToRancher(finishUpgradeURL, "{}", authToken);
+			if (Util.pollingForState(url, authToken, upgradeTimeout, Constant.State.ACTIVE)) {
+				Util.postToRancher(upgradeURL, Util.makePostData(dockerImage), authToken);
+				if (Util.pollingForState(url, authToken, upgradeTimeout, Constant.State.UPGRADED)) {
+					Util.postToRancher(finishUpgradeURL, "{}", authToken);
+				} else {
+					Util.postToRancher(rollbackURL, "{}", authToken);
+				}
+			} else {
+				Util.postToRancher(rollbackURL, "{}", authToken);
+			}
+
+			break;
+		case Constant.State.UPGRADING:
+			Util.postToRancher(rollbackURL, "{}", authToken);
+			if (Util.pollingForState(url, authToken, upgradeTimeout, Constant.State.ACTIVE)) {
+				Util.postToRancher(upgradeURL, Util.makePostData(dockerImage), authToken);
+			} else {
+				Util.postToRancher(rollbackURL, "{}", authToken);
+			}
+			break;
+		default:
+			LOGGER.error("Failed to fetch service status");
+			break;
 		}
 	}
-	
-	public static void main(String[] args) throws MojoExecutionException, MojoFailureException {
-		new RancherAPIConnectionMojo().execute();
-	}
-
-	private String postToRancher(String url, String postData, String authToken) {
-		getLog().info("IN - doSendRequest()");
-		getLog().info("Send POST request to " + url);
-		getLog().info("Post data = " + postData);
-		String result = Util.connectToWebService(url, Constant.METHOD_POST, postData, authToken);
-		getLog().info("Result : " + result);
-		getLog().info("OUT - doSendRequest()");
-		return result;
-	}
-	
-	private String fetchServiceInfoFromRancher(String url, String authToken) {
-		getLog().info("IN - getServiceInfo()");
-		getLog().info("Send GET request to " + url);
-		String result = Util.connectToWebService(url, Constant.METHOD_GET, null, authToken);
-		getLog().info("Result : " + result);
-		getLog().info("OUT - getServiceInfo()");
-		return result;
-	}
-
 }
