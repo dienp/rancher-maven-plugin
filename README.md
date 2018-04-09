@@ -2,11 +2,11 @@
 Rancher maven plugin for automatic upgrade services
 
 1. Installation
-```xml
+```text
 <plugin>
-    <groupId>com.github.ptdien</groupId>
-    <artifactId>rancher-maven-plugin</artifactId>
-    <version>0.0.3</version>
+<groupId>com.github.ptdien</groupId>
+<artifactId>rancher-maven-plugin</artifactId>
+<version>0.0.3</version>
 </plugin>
 ```
 
