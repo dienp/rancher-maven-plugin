@@ -9,6 +9,7 @@ target/
 .settings
 .springBeans
 bin/
+settings.xml
 
 ### IntelliJ IDEA ###
 .idea
