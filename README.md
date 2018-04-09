@@ -27,6 +27,6 @@ What are those above?
 -Dservice.upgrade.timeout: Timeout if upgrading task takes too long. Ex: 60000 (ms).
 -Drancher.username: Your environment accessKey. (API -> Keys -> Add evironment API key).
 -Drancher.password: Your environment serectKey
--Ddocker.image: Which docker image is used to upgrade this service? Ex: 0.0.0.0:9000/dockerImage:1.0.0
+-Ddocker.image: Which docker image is used for upgrading this service? Ex: 0.0.0.0:9000/dockerImage:1.0.0
 ```
 
