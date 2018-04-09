@@ -14,6 +14,10 @@ import org.codehaus.plexus.util.StringUtils;
 
 public class Util {
 
+	private Util() {
+		throw new IllegalArgumentException("Utility class");
+	}
+	
 	private static final Logger LOGGER = Logger.getLogger(Util.class);
 
 	public static String postToRancher(String url, String postData, String authToken) {
@@ -53,7 +57,7 @@ public class Util {
 	}
 
 	public static String makePostData(String dockerImage) {
-		LOGGER.debug("docker image name = " + dockerImage);
+		LOGGER.debug("Docker image name = " + dockerImage);
 		dockerImage = dockerImage.replace("\\", "/");
 		String template = "{  \r\n" + "   \"inServiceStrategy\":{  \r\n" + "      \"launchConfig\":{  \r\n"
 				+ "         \"imageUuid\":\"docker:" + dockerImage + "\"\r\n" + "      }\r\n" + "   },\r\n"
@@ -61,46 +65,34 @@ public class Util {
 		return template;
 	}
 
-	private static String readContentOfStream(InputStream inputStream) {
-		StringBuilder stringBuilder = new StringBuilder();
-		byte[] readBuffer = new byte[4096];
-		int read;
-		try {
-			while ((read = inputStream.read(readBuffer)) != -1) {
-				stringBuilder.append(new String(readBuffer, 0, read));
-			}
-		} catch (IOException e) {
-			LOGGER.error("IOException: ", e);
-		}
-		return stringBuilder.toString();
-	}
 
-	public static String getBasicAuthToken(String username, String password) {
-		String encoding = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-		return "Basic " + encoding;
-	}
 
 	public static boolean pollingForState(String url, String authToken, Long upgradeTimeout, String desiredState) {
 		long startTimestamp = System.currentTimeMillis();
-		LOGGER.debug("Polling for " + upgradeTimeout + " ms");
+		LOGGER.debug("Polling...");
 		while (startTimestamp + upgradeTimeout > (new Date()).getTime())
 		{
 			try {
-				LOGGER.debug("Wait for 5000ms");
-				Thread.sleep(5000);
+				Thread.sleep(Constant.REQUEST_INTERVAL);
 			} catch (InterruptedException e) {
 				LOGGER.error("InterruptedException: " + e);
 				Thread.currentThread().interrupt();
 			}
 			
 			String state = Util.findKeyValue(Util.fetchServiceInfoFromRancher(url, authToken), Constant.KEYWORD_STATE);
+			if(StringUtils.isEmpty(state)) {
+				LOGGER.error("Failed to fetch service state");
+				return false;
+			}
+			
 			LOGGER.debug("Service state = " + state);
-			if (!StringUtils.isEmpty(state) && state.equalsIgnoreCase(desiredState))
+			if (state.equalsIgnoreCase(desiredState))
 			{
+				LOGGER.debug("Found desired state!");
 				return true;
 			}
 		}
-		LOGGER.debug("Upgrading task timeout!");
+		LOGGER.debug("Upgrading service timeout!");
 		return false;
 	}
 
@@ -115,5 +107,25 @@ public class Util {
 			LOGGER.error("Couldn't find any instances of key =" + key);
 		}
 		return value;
+	}
+	
+	public static String getBasicAuthToken(String username, String password) {
+		//Basic + base64(username:password) = Basic Auth Token
+		String encoding = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+		return "Basic " + encoding; 
+	}
+	
+	private static String readContentOfStream(InputStream inputStream) {
+		StringBuilder stringBuilder = new StringBuilder();
+		byte[] readBuffer = new byte[4096];
+		int read;
+		try {
+			while ((read = inputStream.read(readBuffer)) != -1) {
+				stringBuilder.append(new String(readBuffer, 0, read));
+			}
+		} catch (IOException e) {
+			LOGGER.error("IOException: ", e);
+		}
+		return stringBuilder.toString();
 	}
 }

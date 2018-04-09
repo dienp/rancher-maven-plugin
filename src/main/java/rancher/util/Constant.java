@@ -39,4 +39,6 @@ public class Constant {
 
 	public static final String PROTOCOL = "http://";
 	public static final String KEYWORD_STATE = "state";
+	public static final String EMPTY_POST_DATA = "{}";
+	public static final long REQUEST_INTERVAL = 3000;
 }
