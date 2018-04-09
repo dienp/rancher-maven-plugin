@@ -19,9 +19,19 @@
 		</license>
 	</licenses>
 
+	<developers>
+		<developer>
+			<name>Phan Thanh Dien</name>
+			<email>ptdien.lxag@gmail.com</email>
+			<organization>TMA</organization>
+			<organizationUrl>tma.com.vn</organizationUrl>
+		</developer>
+	</developers>
+
 	<scm>
-		<url>https://github.com/ptdien/rancher-maven-plugin.git</url>
-		<connection>scm:git:https://github.com/ptdien/rancher-maven-plugin.git</connection>
+		<connection>scm:git:git://github.com/ptdien/rancher-maven-plugin.git</connection>
+		<developerConnection>scm:git:ssh://github.com/ptdien/rancher-maven-plugin.git</developerConnection>
+        <url>https://github.com/ptdien/rancher-maven-plugin/tree/develop</url>
 	</scm>
 
 	<properties>

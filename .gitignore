@@ -10,6 +10,7 @@ target/
 .springBeans
 bin/
 settings.xml
+release.properties
 
 ### IntelliJ IDEA ###
 .idea
