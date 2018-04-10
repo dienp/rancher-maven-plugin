@@ -4,7 +4,7 @@
 
 	<groupId>com.github.ptdien</groupId>
 	<artifactId>rancher-maven-plugin</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.4-SNAPSHOT</version>
 
 	<packaging>maven-plugin</packaging>
 
@@ -36,10 +36,14 @@
 	</scm>
 
 	<distributionManagement>
+
+
 		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<id>central</id>
+			<url>https://repository.apache.org/snapshots/</url>
 		</snapshotRepository>
+		<!-- <snapshotRepository> <id>ossrh</id> <url>https://oss.sonatype.org/content/repositories/snapshots</url> 
+			</snapshotRepository> -->
 
 		<repository>
 			<id>central</id>
@@ -83,7 +87,7 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 
