@@ -11,6 +11,8 @@ target/
 bin/
 settings.xml
 release.properties
+pom.xml.releaseBackup
+pom.xml.versionsBackup
 
 ### IntelliJ IDEA ###
 .idea
