@@ -3,11 +3,20 @@ Rancher maven plugin for automatic upgrade services
 
 1. Installation
 ```xml
-    <plugin>
-        <groupId>com.github.ptdien</groupId>
-        <artifactId>rancher-maven-plugin</artifactId>
-        <version>0.0.3</version>
-    </plugin>
+<pluginRepositories>
+    <pluginRepository>
+        <id>ossrh</id>
+        <name>Sonatype Public Plugin Repository</name>
+        <url>https://oss.sonatype.org/content/groups/public/</url>
+		</pluginRepository>
+</pluginRepositories>
+```
+```xml
+<plugin>
+    <groupId>com.github.ptdien</groupId>
+    <artifactId>rancher-maven-plugin</artifactId>
+    <version>0.0.3</version>
+</plugin>
 ```
 
 2. Usage:
@@ -29,4 +38,3 @@ What are those above?
 -Drancher.password: Your environment secretKey
 -Ddocker.image: Which docker image is used for upgrading this service? Ex: 0.0.0.0:9000/dockerimage:1.0.0
 ```
-
