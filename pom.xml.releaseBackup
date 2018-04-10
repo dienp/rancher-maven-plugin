@@ -9,7 +9,7 @@
 	<packaging>maven-plugin</packaging>
 
 	<name>Rancher Maven Plugin</name>
-	<description>This plugin is to help automating upgrade serivces managed by Rancher</description>
+	<description>This plugin is to help automating upgrade services managed by Rancher</description>
 	<url>https://github.com/ptdien/rancher-maven-plugin</url>
 
 	<licenses>
