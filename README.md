@@ -30,10 +30,11 @@ mvn -Drancher.root=string
 rancher:run
 ```
 
+What are those above?
 ```text
 -Drancher.root: Rancher service url (no protocol). Ex: 0.0.0.0:8080\v2-beta\projects\<projectId>\services\<serviceId>?action=.
 -Dservice.upgrade.timeout: Timeout if upgrading task takes too long. Ex: 60000 (ms).
 -Drancher.username: Your environment accessKey. (API -> Keys -> Add evironment API key).
 -Drancher.password: Your environment secretKey
--Ddocker.image: Which docker image is used for upgrading this service? Ex: 0.0.0.0:9000/dockerImage:1.0.0
+-Ddocker.image: Which docker image is used for upgrading this service? Ex: 0.0.0.0:9000/dockerimage:1.0.0
 ```
