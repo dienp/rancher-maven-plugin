@@ -3,19 +3,10 @@ Rancher maven plugin for automatic upgrade services
 
 1. Installation
 ```xml
-<pluginRepositories>
-    <pluginRepository>
-        <id>ossrh</id>
-        <name>Sonatype Public Plugin Repository</name>
-        <url>https://oss.sonatype.org/content/groups/public/</url>
-		</pluginRepository>
-</pluginRepositories>
-```
-```xml
 <plugin>
     <groupId>com.github.ptdien</groupId>
     <artifactId>rancher-maven-plugin</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </plugin>
 ```
 
