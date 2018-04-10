@@ -5,21 +5,33 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Base64;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.codehaus.plexus.util.StringUtils;
 
 public class Util {
 
 	private Util() {
-		throw new IllegalStateException("Utility class");
+		throw new IllegalArgumentException("Utility class");
+	}
+	
+	private static final Logger LOGGER = Logger.getLogger(Util.class);
+
+	public static String postToRancher(String url, String postData, String authToken) {
+		LOGGER.debug("Send POST request to URL: " + url);
+		LOGGER.debug("Post data: " + postData);
+		return Util.connectToWebService(url, Constant.METHOD_POST, postData, authToken);
 	}
 
-	private static final Logger logger = Logger.getLogger(Util.class);
+	public static String fetchServiceInfoFromRancher(String url, String authToken) {
+		LOGGER.debug("Send GET request to URL: " + url);
+		return Util.connectToWebService(url, Constant.METHOD_GET, null, authToken);
+	}
 
 	public static String connectToWebService(String urlString, String method, String postBody, String authToken) {
-		logger.debug("IN - connectToWebService()");
 		String result = null;
 		try {
 			HttpURLConnection con = (HttpURLConnection) new URL(urlString).openConnection();
@@ -39,27 +51,71 @@ public class Util {
 				result = readContentOfStream(con.getErrorStream());
 			}
 		} catch (IOException e) {
-			logger.error("IOException: ", e);
+			LOGGER.error("IOException: ", e);
 		}
-		logger.debug("OUT - connectToWebService()");
 		return result;
 	}
 
-	public static String constructURL(String rootPath, String action) {
-		logger.debug("IN - constructURL()");
-		StringBuilder sb = new StringBuilder();
-		sb.append(rootPath);
-		;
-		if (action != null) {
-			sb.append("?action=" + action);
-		}
-		logger.debug("Constructed URL = " + sb.toString());
-		logger.debug("OUT - constructURL()");
-		return sb.toString();
+	public static String makePostData(String dockerImage) {
+		LOGGER.debug("Docker image name = " + dockerImage);
+		dockerImage = dockerImage.replace("\\", "/");
+		String template = "{  \r\n" + "   \"inServiceStrategy\":{  \r\n" + "      \"launchConfig\":{  \r\n"
+				+ "         \"imageUuid\":\"docker:" + dockerImage + "\"\r\n" + "      }\r\n" + "   },\r\n"
+				+ "   \"toServiceStrategy\":null\r\n" + "}";
+		return template;
 	}
 
+
+
+	public static boolean pollingForState(String url, String authToken, Long upgradeTimeout, String desiredState) {
+		long startTimestamp = System.currentTimeMillis();
+		LOGGER.debug("Polling...");
+		while (startTimestamp + upgradeTimeout > (new Date()).getTime())
+		{
+			try {
+				Thread.sleep(Constant.REQUEST_INTERVAL);
+			} catch (InterruptedException e) {
+				LOGGER.error("InterruptedException: " + e);
+				Thread.currentThread().interrupt();
+			}
+			
+			String state = Util.findKeyValue(Util.fetchServiceInfoFromRancher(url, authToken), Constant.KEYWORD_STATE);
+			if(StringUtils.isEmpty(state)) {
+				LOGGER.error("Failed to fetch service state");
+				return false;
+			}
+			
+			LOGGER.debug("Service state = " + state);
+			if (state.equalsIgnoreCase(desiredState))
+			{
+				LOGGER.debug("Found desired state!");
+				return true;
+			}
+		}
+		LOGGER.debug("Upgrading service timeout!");
+		return false;
+	}
+
+	public static String findKeyValue(String json, String key) {
+		String value = null;
+		Pattern pattern = Pattern.compile("\"" + key + "\":\"(\\w+)\"");
+		Matcher m = pattern.matcher(json);
+		if (m.find()) {
+			value = m.group(1);
+			LOGGER.debug("Found: " + key + " = " + value);
+		} else {
+			LOGGER.error("Couldn't find any instances of key =" + key);
+		}
+		return value;
+	}
+	
+	public static String getBasicAuthToken(String username, String password) {
+		//Basic + base64(username:password) = Basic Auth Token
+		String encoding = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+		return "Basic " + encoding; 
+	}
+	
 	private static String readContentOfStream(InputStream inputStream) {
-		logger.debug("IN - readContentOfStream()");
 		StringBuilder stringBuilder = new StringBuilder();
 		byte[] readBuffer = new byte[4096];
 		int read;
@@ -68,38 +124,8 @@ public class Util {
 				stringBuilder.append(new String(readBuffer, 0, read));
 			}
 		} catch (IOException e) {
-			logger.error("IOException: ", e);
+			LOGGER.error("IOException: ", e);
 		}
-		logger.debug("OUT - readContentOfStream()");
 		return stringBuilder.toString();
-	}
-
-	public static String getBasicAuthToken(String username, String password) {
-		String encoding = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-		return "Basic " + encoding;
-	}
-
-	public static String escapeSlash(String s) {
-		logger.debug("IN - escapeSlash()");
-		logger.debug("Input string = " + s);
-		String result = s.replaceAll("\\", "/");
-		logger.debug("Result string = " + result);
-		logger.debug("OUT - escapeSlash()");
-		return result;
-	}
-
-	public static String findKeyValue(String json, String key) {
-		logger.debug("IN - findKeyValue()");
-		String value = null;
-		Pattern pattern = Pattern.compile("\"" + key + "\":\"(\\w+)\"");
-		Matcher m = pattern.matcher(json);
-		if (m.find()) {
-			value = m.group(1);
-			logger.debug("Found: " + key + " = " + value);
-		} else {
-			logger.error("Couldn't find any instances of key =" + key);
-		}
-		logger.debug("OUT - findKeyValue()");
-		return value;
 	}
 }
