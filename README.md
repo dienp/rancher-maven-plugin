@@ -1,7 +1,6 @@
 # rancher-maven-plugin 
-
-Rancher maven plugin for automatic upgrade services
-##1. Installation
+Upgrade a single service in specific environment
+## 1. Installation
 ```xml
 <plugin>
     <groupId>com.github.ptdien</groupId>
@@ -10,7 +9,7 @@ Rancher maven plugin for automatic upgrade services
 </plugin>
 ```
 
-##2. Usage:
+## 2. Usage:
 
 ```text
 mvn -Drancher.root=string 
@@ -21,7 +20,7 @@ mvn -Drancher.root=string
     rancher:run
 ```
 
-##3. What are those above?
+## 3. What are those above?
 ```text
     rancher.root: Rancher service url (no protocol). Ex: 0.0.0.0:8080\v2-beta\projects\<projectId>\services\<serviceId>?action=.
     service.upgrade.timeout: Timeout if upgrading task takes too long. Ex: 60000 (ms).
