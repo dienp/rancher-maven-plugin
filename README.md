@@ -1,7 +1,7 @@
-# rancher-maven-plugin
-Rancher maven plugin for automatic upgrade services
+# rancher-maven-plugin 
 
-1. Installation
+Rancher maven plugin for automatic upgrade services
+##1. Installation
 ```xml
 <plugin>
     <groupId>com.github.ptdien</groupId>
@@ -10,22 +10,22 @@ Rancher maven plugin for automatic upgrade services
 </plugin>
 ```
 
-2. Usage:
+##2. Usage:
 
 ```text
 mvn -Drancher.root=string 
--Dservice.upgrade.timeout=long 
--Drancher.username=string 
--Ddocker.image=string 
--Drancher.password=string 
-rancher:run
+    -Dservice.upgrade.timeout=long 
+    -Drancher.username=string 
+    -Ddocker.image=string 
+    -Drancher.password=string 
+    rancher:run
 ```
 
-What are those above?
+##3. What are those above?
 ```text
--Drancher.root: Rancher service url (no protocol). Ex: 0.0.0.0:8080\v2-beta\projects\<projectId>\services\<serviceId>?action=.
--Dservice.upgrade.timeout: Timeout if upgrading task takes too long. Ex: 60000 (ms).
--Drancher.username: Your environment accessKey. (API -> Keys -> Add evironment API key).
--Drancher.password: Your environment secretKey
--Ddocker.image: Which docker image is used for upgrading this service? Ex: 0.0.0.0:9000/dockerimage:1.0.0
+    rancher.root: Rancher service url (no protocol). Ex: 0.0.0.0:8080\v2-beta\projects\<projectId>\services\<serviceId>?action=.
+    service.upgrade.timeout: Timeout if upgrading task takes too long. Ex: 60000 (ms).
+    rancher.username: Your environment accessKey. (API -> Keys -> Add evironment API key).
+    rancher.password: Your environment secretKey
+    docker.image: Which docker image is used for upgrading this service? Ex: 0.0.0.0:9000/dockerimage:1.0.0
 ```
