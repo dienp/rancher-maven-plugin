@@ -30,7 +30,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/ptdien/rancher-maven-plugin.git</connection>
 		<developerConnection>scm:git:ssh://github.com/ptdien/rancher-maven-plugin.git</developerConnection>
-		<url>https://github.com/ptdien/rancher-maven-plugin/tree/develop</url>
+		<url>https://github.com/ptdien/rancher-maven-plugin/tree/master</url>
 	</scm>
 
 	<distributionManagement>
@@ -47,7 +47,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j-version>1.2.17</log4j-version>
-		<lombok-version>1.16.20</lombok-version>
 	</properties>
 
 	<dependencies>
