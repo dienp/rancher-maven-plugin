@@ -41,4 +41,6 @@ public class Constant {
 	public static final String KEYWORD_STATE = "state";
 	public static final String EMPTY_POST_DATA = "{}";
 	public static final long REQUEST_INTERVAL = 3000;
+	public static final String HTTP_PROTOCOL = "http";
+	public static final CharSequence RANCHER_API_VERSION = "v2-beta";
 }

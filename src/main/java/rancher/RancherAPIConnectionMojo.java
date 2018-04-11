@@ -13,8 +13,11 @@ import rancher.util.Util;
 @Mojo(name = "run")
 public class RancherAPIConnectionMojo extends AbstractMojo {
 
-	@Parameter(property = "rancher.root")
-	private String rancherUrl;
+	@Parameter(property = "rancher.host")
+	private String rancherHost;
+	
+	@Parameter(property= "rancher.port")
+	private String rancherPort;
 
 	@Parameter(property = "rancher.username")
 	private String username;
@@ -32,7 +35,7 @@ public class RancherAPIConnectionMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		String url = Constant.PROTOCOL + rancherUrl.replace("\\", "/");
+		String url = Constant.PROTOCOL + rancherHost.replace("\\", "/");
 		LOGGER.debug("RANCHER URL: " + url);
 
 		String upgradeURL = url + Constant.Action.UPGRAGE;

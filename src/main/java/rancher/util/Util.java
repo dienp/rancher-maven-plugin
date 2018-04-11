@@ -3,9 +3,12 @@ package rancher.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.Date;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +20,7 @@ public class Util {
 	private Util() {
 		throw new IllegalArgumentException("Utility class");
 	}
-	
+
 	private static final Logger LOGGER = Logger.getLogger(Util.class);
 
 	public static String postToRancher(String url, String postData, String authToken) {
@@ -65,29 +68,25 @@ public class Util {
 		return template;
 	}
 
-
-
 	public static boolean pollingForState(String url, String authToken, Long upgradeTimeout, String desiredState) {
 		long startTimestamp = System.currentTimeMillis();
 		LOGGER.debug("Polling...");
-		while (startTimestamp + upgradeTimeout > (new Date()).getTime())
-		{
+		while (startTimestamp + upgradeTimeout > (new Date()).getTime()) {
 			try {
 				Thread.sleep(Constant.REQUEST_INTERVAL);
 			} catch (InterruptedException e) {
 				LOGGER.error("InterruptedException: " + e);
 				Thread.currentThread().interrupt();
 			}
-			
+
 			String state = Util.findKeyValue(Util.fetchServiceInfoFromRancher(url, authToken), Constant.KEYWORD_STATE);
-			if(StringUtils.isEmpty(state)) {
+			if (StringUtils.isEmpty(state)) {
 				LOGGER.error("Failed to fetch service state");
 				return false;
 			}
-			
+
 			LOGGER.debug("Service state = " + state);
-			if (state.equalsIgnoreCase(desiredState))
-			{
+			if (state.equalsIgnoreCase(desiredState)) {
 				LOGGER.debug("Found desired state!");
 				return true;
 			}
@@ -108,13 +107,13 @@ public class Util {
 		}
 		return value;
 	}
-	
+
 	public static String getBasicAuthToken(String username, String password) {
-		//Basic + base64(username:password) = Basic Auth Token
+		// Basic + base64(username:password) = Basic Auth Token
 		String encoding = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-		return "Basic " + encoding; 
+		return "Basic " + encoding;
 	}
-	
+
 	private static String readContentOfStream(InputStream inputStream) {
 		StringBuilder stringBuilder = new StringBuilder();
 		byte[] readBuffer = new byte[4096];
@@ -127,5 +126,35 @@ public class Util {
 			LOGGER.error("IOException: ", e);
 		}
 		return stringBuilder.toString();
+	}
+
+	public URI uriBuilder(String host, Integer port, String projectId, String stackId, String serviceId, String query) {
+		StringJoiner sj = new StringJoiner("/");
+		sj.add("");
+		sj.add(Constant.RANCHER_API_VERSION);
+		
+		if (StringUtils.isEmpty(projectId)) {
+			return null;
+		}else {
+			sj.add("projects");
+			sj.add(projectId);
+		}
+
+		if (!StringUtils.isEmpty(stackId)) {
+			sj.add("stacks");
+			sj.add(stackId);
+		}
+
+		if (!StringUtils.isEmpty(serviceId)) {
+			sj.add("services");
+			sj.add(serviceId);
+		}
+		URI uri = null;
+		try {
+			uri = new URI(Constant.HTTP_PROTOCOL, null, host, port, sj.toString(), query, null);
+		} catch (URISyntaxException e) {
+			LOGGER.error("URISyntaxException: ", e);
+		}
+		return uri;
 	}
 }
