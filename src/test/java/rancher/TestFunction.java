@@ -2,25 +2,12 @@ package rancher;
 
 import static org.junit.Assert.assertNotEquals;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.List;
-import java.util.StringJoiner;
-
-import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.StringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import rancher.models.DataJsonModel;
-import rancher.models.ResponseJsonModel;
-
+@Ignore
 public class TestFunction {
 
 	private static String rancherHost = "10.3.65.122";
@@ -38,5 +25,4 @@ public class TestFunction {
 		String serviceId = rancherApi.findServiceIdByName(rancherHost, rancherPort, projectId, stackId, rancherServiceName, authToken);
 		assertNotEquals(true, StringUtils.isEmpty(serviceId));
 	}
-
 }

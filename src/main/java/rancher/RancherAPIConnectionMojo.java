@@ -48,16 +48,15 @@ public class RancherAPIConnectionMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		RancherAPIConnectionMojo obj = this;
-		validateParameters(obj);
-		
+		validateParameters(this);
+
 		RancherAPI rancherApi = new RancherAPI();
 		String authToken = Util.getBasicAuthToken(username, password);
 		String projectId = rancherApi.findProjectIdByName(rancherHost, rancherPort, rancherProjectName, authToken);
 		String stackId = rancherApi.findStackIdByName(rancherHost, rancherPort, projectId, rancherStackName, authToken);
 		String serviceId = rancherApi.findServiceIdByName(rancherHost, rancherPort, projectId, stackId,
 				rancherServiceName, authToken);
-		
+
 		URIBuilder uriBuilder = new URIBuilder(rancherHost, rancherPort, projectId, serviceId, null);
 		String url = uriBuilder.buildSerivceURI().toString();
 
@@ -141,5 +140,4 @@ public class RancherAPIConnectionMojo extends AbstractMojo {
 			}
 		}
 	}
-
 }
