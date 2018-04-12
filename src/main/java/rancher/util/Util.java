@@ -3,12 +3,9 @@ package rancher.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.Date;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,35 +123,5 @@ public class Util {
 			LOGGER.error("IOException: ", e);
 		}
 		return stringBuilder.toString();
-	}
-
-	public URI uriBuilder(String host, Integer port, String projectId, String stackId, String serviceId, String query) {
-		StringJoiner sj = new StringJoiner("/");
-		sj.add("");
-		sj.add(Constant.RANCHER_API_VERSION);
-		
-		if (StringUtils.isEmpty(projectId)) {
-			return null;
-		}else {
-			sj.add("projects");
-			sj.add(projectId);
-		}
-
-		if (!StringUtils.isEmpty(stackId)) {
-			sj.add("stacks");
-			sj.add(stackId);
-		}
-
-		if (!StringUtils.isEmpty(serviceId)) {
-			sj.add("services");
-			sj.add(serviceId);
-		}
-		URI uri = null;
-		try {
-			uri = new URI(Constant.HTTP_PROTOCOL, null, host, port, sj.toString(), query, null);
-		} catch (URISyntaxException e) {
-			LOGGER.error("URISyntaxException: ", e);
-		}
-		return uri;
 	}
 }
