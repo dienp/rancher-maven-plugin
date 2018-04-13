@@ -4,12 +4,12 @@
 
 	<groupId>com.github.ptdien</groupId>
 	<artifactId>rancher-maven-plugin</artifactId>
-	<version>0.0.6-SNAPSHOT</version>
+	<version>0.0.7-SNAPSHOT</version>
 
 	<packaging>maven-plugin</packaging>
 
 	<name>Rancher Maven Plugin</name>
-	<description>Upgrade a single service in a specific environment</description>
+	<description>A simple maven plugin to interact with services</description>
 	<url>https://github.com/ptdien/rancher-maven-plugin</url>
 
 	<licenses>
@@ -22,16 +22,17 @@
 
 	<developers>
 		<developer>
-			<name>Phan Thanh Dien</name>
+			<name>Dien Phan Thanh</name>
 			<email>ptdien.lxag@gmail.com</email>
 		</developer>
 	</developers>
 
 	<scm>
-	    <url>https://github.com/ptdien/rancher-maven-plugin</url>
-		<connection>scm:git:https://github.com/ptdien/rancher-maven-plugin.git</connection>
-		<developerConnection>scm:git:https://github.com/ptdien/rancher-maven-plugin.git</developerConnection>
+		<connection>scm:git:git://github.com/ptdien/rancher-maven-plugin.git</connection>
+		<developerConnection>scm:git:ssh://github.com/ptdien/rancher-maven-plugin.git</developerConnection>
+		<url>https://github.com/ptdien/rancher-maven-plugin</url>
 	</scm>
+
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -105,7 +106,7 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
@@ -115,10 +116,8 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<useReleaseProfile>false</useReleaseProfile>
 					<releaseProfiles>release</releaseProfiles>
-					<goals>deploy</goals>
 				</configuration>
 			</plugin>
 		</plugins>
-
 	</build>
 </project>
