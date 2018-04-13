@@ -28,8 +28,8 @@
 	</developers>
 
 	<scm>
+	    <url>https://github.com/ptdien/rancher-maven-plugin</url>
 		<connection>scm:git:https://github.com/ptdien/rancher-maven-plugin.git</connection>
-		<url>https://github.com/ptdien/rancher-maven-pluginr</url>
 		<developerConnection>scm:git:https://github.com/ptdien/rancher-maven-plugin.git</developerConnection>
 	</scm>
 
