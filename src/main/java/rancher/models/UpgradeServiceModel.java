@@ -1,5 +1,9 @@
 package rancher.models;
 
-public class UpgradeServiceModel {
+import lombok.Data;
 
+@Data
+public class UpgradeServiceModel {
+	InServiceStrategy inServiceStrategy;
+	String toServiceStrategy;
 }
