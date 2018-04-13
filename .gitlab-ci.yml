@@ -1,0 +1,16 @@
+image: maven:latest
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+cache:
+  paths:
+    - target/
+    - .m2/repository/
+build:
+  stage: build
+  script:
+    - mvn $MAVEN_OPTS clean package
+deploy:
+  stage: deploy
+  script:
+    - mvn $MAVEN_OPTS release:clean release:prepare release:perform
