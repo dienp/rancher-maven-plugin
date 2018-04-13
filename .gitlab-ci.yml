@@ -15,4 +15,4 @@ build:
 deploy:
   stage: deploy
   script:
-    - mvn $MAVEN_OPTS -DdryRun=true -Dserver.username=$SERVER_USERNAME -Dserver.password=$SERVER_PASSWORD release:clean release:prepare release:perform -X
+    - mvn $MAVEN_OPTS -DdryRun=true -Dserver.username=$SERVER_USERNAME -Dserver.password=$SERVER_PASSWORD release:clean release:prepare release:perform
