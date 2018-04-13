@@ -10,11 +10,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import rancher.common.Constant;
+import rancher.common.Util;
 import rancher.models.DataJsonModel;
 import rancher.models.ResponseJsonModel;
 import rancher.models.URIBuilder;
-import rancher.util.Constant;
-import rancher.util.Util;
 
 public class RancherAPI {
 
@@ -34,13 +34,10 @@ public class RancherAPI {
 
 		List<DataJsonModel> services = response.getData();
 		String serviceId = null;
+		
 		if (services.isEmpty()) {
-			// to-do: create new service
-			try {
-				throw new IOException("No services in stack");
-			} catch (IOException e) {
-				LOGGER.error("IOException: ", e);
-			}
+			LOGGER.debug("No services in stack");
+			return Constant.SERVICE_ID_NOT_EXISTED;
 		}
 
 		for (DataJsonModel service : response.getData()) {
@@ -52,12 +49,8 @@ public class RancherAPI {
 		}
 
 		if (StringUtils.isEmpty(serviceId)) {
-			// to-do: create new service
-			try {
-				throw new IOException("No such service: " + serviceName);
-			} catch (IOException e) {
-				LOGGER.error("IOException: ", e);
-			}
+			LOGGER.debug("No such service with name: " + serviceName);
+			return Constant.SERVICE_ID_NOT_EXISTED;
 		}
 
 		return serviceId;
