@@ -13,4 +13,6 @@ build:
 deploy:
   stage: deploy
   script:
-    - mvn $MAVEN_OPTS release:clean release:prepare release:perform
+    - mvn $MAVEN_OPTS release:clean
+    - mvn $MAVEN_OPTS release:prepare -DdryRun=true
+    - mvn $MAVEN_OPTS release:perform
