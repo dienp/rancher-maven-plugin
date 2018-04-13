@@ -2,6 +2,8 @@ image: maven:latest
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  SERVER_USERNAME: "2dt46WeD"
+  SERVER_PASSWORD: "BS4rJ8aQVdVaeL/EV3DURmhvIFGh5DGzxxD9L5w3CcvL"
 cache:
   paths:
     - target/
@@ -13,6 +15,4 @@ build:
 deploy:
   stage: deploy
   script:
-    - mvn $MAVEN_OPTS release:clean
-    - mvn $MAVEN_OPTS release:prepare -DdryRun=true
-    - mvn $MAVEN_OPTS release:perform
+    - mvn $MAVEN_OPTS -DdryRun=true -Dserver.username=$SERVER_USERNAME -Dserver.password=$SERVER_PASSWORD release:clean release:prepare release:perform -X
