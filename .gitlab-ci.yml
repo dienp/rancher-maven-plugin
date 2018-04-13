@@ -15,4 +15,6 @@ build:
 deploy:
   stage: deploy
   script:
+    - git config --global user.email "ptdien.lxag@gmail.com"
+    - git config --global user.name "Dien Phan Thanh"
     - mvn $MAVEN_OPTS -Dserver.username=$SERVER_USERNAME -Dserver.password=$SERVER_PASSWORD release:clean release:prepare release:perform
