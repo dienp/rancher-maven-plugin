@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class InServiceStrategy {
-	LaunchConfig launchConfig;
+	Object launchConfig;
 }

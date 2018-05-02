@@ -6,9 +6,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.codehaus.plexus.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import rancher.common.Constant;
 import rancher.common.Util;
@@ -20,6 +22,17 @@ public class RancherAPI {
 
 	private static final Logger LOGGER = Logger.getLogger(RancherAPI.class);
 
+	public JsonNode getCurrentConfiguration(String serviceWithIdURL, String authToken) {
+		String result = Util.connectToWebService(serviceWithIdURL, Constant.METHOD_GET,null, authToken);
+		JsonNode node = null;
+		try {
+			node = new ObjectMapper().readTree(result);
+		} catch (IOException e) {
+			LOGGER.error("IOException: ", e);
+		}
+		return node.path("launchConfig");
+	}
+	
 	public String findServiceIdByName(String rancherHost, int rancherPort, String projectId, String stackId,
 			String serviceName, String authToken) {
 		String requestURL = new URIBuilder(rancherHost, rancherPort, projectId, stackId, null, null).build().toString();

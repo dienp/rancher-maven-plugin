@@ -15,6 +15,7 @@ import org.codehaus.plexus.util.StringUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import rancher.models.CreateServiceModel;
 import rancher.models.UpgradeServiceModel;
@@ -26,6 +27,7 @@ public class Util {
 	}
 
 	private static final Logger LOGGER = Logger.getLogger(Util.class);
+	private static final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 	public static String postToRancher(String url, String postData, String authToken) {
 		LOGGER.debug("Send POST request to URL: " + url);
@@ -103,8 +105,7 @@ public class Util {
 		return value;
 	}
 
-	public static Object parseJsonFromString(Class<?> clazz, String jsonString) {
-		ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	public static Object jsonParse(Class<?> clazz, String jsonString) {
 		Object obj = null;
 		try {
 			JsonNode json = mapper.readTree(jsonString);
@@ -115,8 +116,7 @@ public class Util {
 		return obj;
 	}
 
-	public static String parseStringFromJson(Object json) {
-		ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	public static String jsonStringify(Object json) {
 		String result = null;
 		try {
 			result = mapper.writeValueAsString(json);
@@ -146,22 +146,25 @@ public class Util {
 		return stringBuilder.toString();
 	}
 
-	public static String makeUpgradeServicePostData(String dockerImage) {
-		UpgradeServiceModel usm = (UpgradeServiceModel) parseJsonFromString(UpgradeServiceModel.class,
+	public static String makeUpgradeServicePostData(String dockerImage, JsonNode launchConfig) {
+		UpgradeServiceModel usm = (UpgradeServiceModel) jsonParse(UpgradeServiceModel.class,
 				Constant.PostDataTemplate.UPGRAGE_SERIVCE);
+		
 		dockerImage = dockerImage.replace("\\","/");
-		usm.getInServiceStrategy().getLaunchConfig().setImageUuid("docker:" + dockerImage);;
-		return parseStringFromJson(usm);
+		ObjectNode o = (ObjectNode) launchConfig;
+		o.put("imageUuid", "docker:" + dockerImage);
+		
+		usm.getInServiceStrategy().setLaunchConfig(launchConfig);
+		return jsonStringify(usm);
 	}
 
 	public static String makeCreateServicePostData(String name, String stackId, String dockerImage) {
-		CreateServiceModel csm = (CreateServiceModel) parseJsonFromString(CreateServiceModel.class,
+		CreateServiceModel csm = (CreateServiceModel) jsonParse(CreateServiceModel.class,
 				Constant.PostDataTemplate.CREATE_SERVICE);
 		dockerImage = dockerImage.replace("\\","/");
 		csm.getLaunchConfig().setImageUuid("docker:" + dockerImage);
 		csm.setStackId(stackId);
 		csm.setName(name);
-		return parseStringFromJson(csm);
+		return jsonStringify(csm);
 	}
-
 }
