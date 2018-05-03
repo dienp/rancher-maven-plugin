@@ -10,9 +10,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import rancher.common.Constant;
+import rancher.common.Util;
 import rancher.models.URIBuilder;
-import rancher.util.Constant;
-import rancher.util.Util;
 
 @Mojo(name = "run")
 public class RancherAPIConnectionMojo extends AbstractMojo {
@@ -57,53 +59,65 @@ public class RancherAPIConnectionMojo extends AbstractMojo {
 		String serviceId = rancherApi.findServiceIdByName(rancherHost, rancherPort, projectId, stackId,
 				rancherServiceName, authToken);
 
-		URIBuilder uriBuilder = new URIBuilder(rancherHost, rancherPort, projectId, serviceId, null);
-		String url = uriBuilder.buildSerivceURI().toString();
+		if (serviceId.equals(Constant.SERVICE_ID_NOT_EXISTED)) {
+			String createServiceURL = new URIBuilder(rancherHost, rancherPort, projectId, null).buildCreateServiceURI()
+					.toString();
+			createService(createServiceURL, rancherServiceName, stackId, dockerImageName, authToken);
+		} else {
+			URIBuilder uriBuilder = new URIBuilder(rancherHost, rancherPort, projectId, serviceId, null);
+			String serviceWithIdURL = uriBuilder.buildServiceWithIdURL().toString();
+			LOGGER.debug("serviceWithIdURL: " + serviceWithIdURL);
+			JsonNode launchConfig = rancherApi.getCurrentConfiguration(serviceWithIdURL, authToken);
+			
+			uriBuilder.setQuery(Constant.QueryParam.ACTION + Constant.Action.UPGRAGE);
+			String upgradeURL = uriBuilder.buildServiceWithIdURL().toString();
 
-		uriBuilder.setQuery(Constant.QueryParam.ACTION + Constant.Action.UPGRAGE);
-		String upgradeURL = uriBuilder.buildSerivceURI().toString();
+			uriBuilder.setQuery(Constant.QueryParam.ACTION + Constant.Action.FINISH_UPGRAGE);
+			String finishUpgradeURL = uriBuilder.buildServiceWithIdURL().toString();
 
-		uriBuilder.setQuery(Constant.QueryParam.ACTION + Constant.Action.FINISH_UPGRAGE);
-		String finishUpgradeURL = uriBuilder.buildSerivceURI().toString();
+			uriBuilder.setQuery(Constant.QueryParam.ACTION + Constant.Action.ROLLBACK);
+			String rollbackURL = uriBuilder.buildServiceWithIdURL().toString();
 
-		uriBuilder.setQuery(Constant.QueryParam.ACTION + Constant.Action.ROLLBACK);
-		String rollbackURL = uriBuilder.buildSerivceURI().toString();
+			String state = Util.findKeyValue(Util.fetchServiceInfoFromRancher(serviceWithIdURL, authToken),
+					Constant.KEYWORD_STATE);
 
-		String state = Util.findKeyValue(Util.fetchServiceInfoFromRancher(url, authToken), Constant.KEYWORD_STATE);
-
-		switch (state) {
-		case Constant.State.ACTIVE:
-			upgradeService(upgradeURL, rollbackURL, finishUpgradeURL, rollbackURL, authToken);
-			break;
-		case Constant.State.UPGRADED:
-			finishUpgrade(finishUpgradeURL, authToken);
-			if (Util.pollingForState(url, authToken, actionTimeout, Constant.State.ACTIVE)) {
-				upgradeService(upgradeURL, rollbackURL, finishUpgradeURL, rollbackURL, authToken);
-			} else {
+			switch (state) {
+			case Constant.State.ACTIVATING:
+			case Constant.State.ACTIVE:
+				upgradeService(upgradeURL, rollbackURL, finishUpgradeURL, serviceWithIdURL, dockerImageName,
+						actionTimeout, authToken, launchConfig);
+				break;
+			case Constant.State.UPGRADED:
+				finishUpgradeService(finishUpgradeURL, authToken);
+				if (Util.pollingForState(serviceWithIdURL, authToken, actionTimeout, Constant.State.ACTIVE)) {
+					upgradeService(upgradeURL, rollbackURL, finishUpgradeURL, serviceWithIdURL, dockerImageName,
+							actionTimeout, authToken, launchConfig);
+				} else {
+					rollbackService(rollbackURL, authToken);
+				}
+				break;
+			case Constant.State.UPGRADING:
 				rollbackService(rollbackURL, authToken);
+				if (Util.pollingForState(serviceWithIdURL, authToken, actionTimeout, Constant.State.ACTIVE)) {
+					upgradeService(upgradeURL, rollbackURL, finishUpgradeURL, serviceWithIdURL, dockerImageName,
+							actionTimeout, authToken, launchConfig);
+				} else {
+					rollbackService(rollbackURL, authToken);
+				}
+				break;
+			default:
+				LOGGER.error("Failed to fetch service status");
+				break;
 			}
-			break;
-		case Constant.State.UPGRADING:
-			rollbackService(rollbackURL, authToken);
-			if (Util.pollingForState(url, authToken, actionTimeout, Constant.State.ACTIVE)) {
-				upgradeService(upgradeURL, rollbackURL, finishUpgradeURL, url, authToken);
-			} else {
-				rollbackService(rollbackURL, authToken);
-			}
-			break;
-		default:
-			LOGGER.error("Failed to fetch service status");
-			break;
 		}
-
 	}
 
-	private void upgradeService(String upgradeURL, String rollbackURL, String finishUpgradeURL, String url,
-			String authToken) {
+	private void upgradeService(String upgradeURL, String rollbackURL, String finishUpgradeURL, String serviceWithIdURL,
+			String dockerImage, Long actionTimeout, String authToken, JsonNode launchConfig) {
 		LOGGER.debug("Upgrading service...");
-		Util.postToRancher(upgradeURL, Util.makePostData(dockerImageName), authToken);
-		if (Util.pollingForState(url, authToken, actionTimeout, Constant.State.UPGRADED)) {
-			finishUpgrade(finishUpgradeURL, authToken);
+		Util.postToRancher(upgradeURL, Util.makeUpgradeServicePostData(dockerImage, launchConfig), authToken);
+		if (Util.pollingForState(serviceWithIdURL, authToken, actionTimeout, Constant.State.UPGRADED)) {
+			finishUpgradeService(finishUpgradeURL, authToken);
 		} else {
 			rollbackService(rollbackURL, authToken);
 		}
@@ -114,9 +128,15 @@ public class RancherAPIConnectionMojo extends AbstractMojo {
 		Util.postToRancher(rollbackURL, Constant.EMPTY_POST_DATA, authToken);
 	}
 
-	private void finishUpgrade(String finishUpgradeURL, String authToken) {
+	private void finishUpgradeService(String finishUpgradeURL, String authToken) {
 		LOGGER.debug("Finishing upgrade service...");
 		Util.postToRancher(finishUpgradeURL, Constant.EMPTY_POST_DATA, authToken);
+	}
+
+	private void createService(String createServiceURL, String name, String stackId, String dockerImage,
+			String authToken) {
+		LOGGER.debug("Creating service...");
+		Util.postToRancher(createServiceURL, Util.makeCreateServicePostData(name, stackId, dockerImage), authToken);
 	}
 
 	private void validateParameters(Object obj) {
@@ -140,4 +160,5 @@ public class RancherAPIConnectionMojo extends AbstractMojo {
 			}
 		}
 	}
+
 }

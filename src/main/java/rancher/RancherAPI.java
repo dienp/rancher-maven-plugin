@@ -6,20 +6,33 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.codehaus.plexus.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import rancher.common.Constant;
+import rancher.common.Util;
 import rancher.models.DataJsonModel;
 import rancher.models.ResponseJsonModel;
 import rancher.models.URIBuilder;
-import rancher.util.Constant;
-import rancher.util.Util;
 
 public class RancherAPI {
 
 	private static final Logger LOGGER = Logger.getLogger(RancherAPI.class);
 
+	public JsonNode getCurrentConfiguration(String serviceWithIdURL, String authToken) {
+		String result = Util.connectToWebService(serviceWithIdURL, Constant.METHOD_GET,null, authToken);
+		JsonNode node = null;
+		try {
+			node = new ObjectMapper().readTree(result);
+		} catch (IOException e) {
+			LOGGER.error("IOException: ", e);
+		}
+		return node.path("launchConfig");
+	}
+	
 	public String findServiceIdByName(String rancherHost, int rancherPort, String projectId, String stackId,
 			String serviceName, String authToken) {
 		String requestURL = new URIBuilder(rancherHost, rancherPort, projectId, stackId, null, null).build().toString();
@@ -34,13 +47,10 @@ public class RancherAPI {
 
 		List<DataJsonModel> services = response.getData();
 		String serviceId = null;
+		
 		if (services.isEmpty()) {
-			// to-do: create new service
-			try {
-				throw new IOException("No services in stack");
-			} catch (IOException e) {
-				LOGGER.error("IOException: ", e);
-			}
+			LOGGER.debug("No services in stack");
+			return Constant.SERVICE_ID_NOT_EXISTED;
 		}
 
 		for (DataJsonModel service : response.getData()) {
@@ -52,12 +62,8 @@ public class RancherAPI {
 		}
 
 		if (StringUtils.isEmpty(serviceId)) {
-			// to-do: create new service
-			try {
-				throw new IOException("No such service: " + serviceName);
-			} catch (IOException e) {
-				LOGGER.error("IOException: ", e);
-			}
+			LOGGER.debug("No such service with name: " + serviceName);
+			return Constant.SERVICE_ID_NOT_EXISTED;
 		}
 
 		return serviceId;

@@ -1,4 +1,4 @@
-package rancher.util;
+package rancher.common;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +12,14 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.codehaus.plexus.util.StringUtils;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import rancher.models.CreateServiceModel;
+import rancher.models.UpgradeServiceModel;
+
 public class Util {
 
 	private Util() {
@@ -19,6 +27,7 @@ public class Util {
 	}
 
 	private static final Logger LOGGER = Logger.getLogger(Util.class);
+	private static final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 	public static String postToRancher(String url, String postData, String authToken) {
 		LOGGER.debug("Send POST request to URL: " + url);
@@ -45,7 +54,7 @@ public class Util {
 				con.getOutputStream().flush();
 			}
 			con.connect();
-			if (con.getResponseCode() == 200 || con.getResponseCode() == 202) {
+			if (con.getResponseCode() == 200 || con.getResponseCode() == 202 || con.getResponseCode() == 201) {
 				result = readContentOfStream(con.getInputStream());
 			} else {
 				result = readContentOfStream(con.getErrorStream());
@@ -54,15 +63,6 @@ public class Util {
 			LOGGER.error("IOException: ", e);
 		}
 		return result;
-	}
-
-	public static String makePostData(String dockerImage) {
-		LOGGER.debug("Docker image name = " + dockerImage);
-		dockerImage = dockerImage.replace("\\", "/");
-		String template = "{  \r\n" + "   \"inServiceStrategy\":{  \r\n" + "      \"launchConfig\":{  \r\n"
-				+ "         \"imageUuid\":\"docker:" + dockerImage + "\"\r\n" + "      }\r\n" + "   },\r\n"
-				+ "   \"toServiceStrategy\":null\r\n" + "}";
-		return template;
 	}
 
 	public static boolean pollingForState(String url, String authToken, Long upgradeTimeout, String desiredState) {
@@ -105,6 +105,27 @@ public class Util {
 		return value;
 	}
 
+	public static Object jsonParse(Class<?> clazz, String jsonString) {
+		Object obj = null;
+		try {
+			JsonNode json = mapper.readTree(jsonString);
+			obj = mapper.treeToValue(json, clazz);
+		} catch (IOException e) {
+			LOGGER.error("IOException: ", e);
+		}
+		return obj;
+	}
+
+	public static String jsonStringify(Object json) {
+		String result = null;
+		try {
+			result = mapper.writeValueAsString(json);
+		} catch (IOException e) {
+			LOGGER.error("IOException: ", e);
+		}
+		return result;
+	}
+
 	public static String getBasicAuthToken(String username, String password) {
 		// Basic + base64(username:password) = Basic Auth Token
 		String encoding = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
@@ -123,5 +144,27 @@ public class Util {
 			LOGGER.error("IOException: ", e);
 		}
 		return stringBuilder.toString();
+	}
+
+	public static String makeUpgradeServicePostData(String dockerImage, JsonNode launchConfig) {
+		UpgradeServiceModel usm = (UpgradeServiceModel) jsonParse(UpgradeServiceModel.class,
+				Constant.PostDataTemplate.UPGRAGE_SERIVCE);
+		
+		dockerImage = dockerImage.replace("\\","/");
+		ObjectNode o = (ObjectNode) launchConfig;
+		o.put("imageUuid", "docker:" + dockerImage);
+		
+		usm.getInServiceStrategy().setLaunchConfig(launchConfig);
+		return jsonStringify(usm);
+	}
+
+	public static String makeCreateServicePostData(String name, String stackId, String dockerImage) {
+		CreateServiceModel csm = (CreateServiceModel) jsonParse(CreateServiceModel.class,
+				Constant.PostDataTemplate.CREATE_SERVICE);
+		dockerImage = dockerImage.replace("\\","/");
+		csm.getLaunchConfig().setImageUuid("docker:" + dockerImage);
+		csm.setStackId(stackId);
+		csm.setName(name);
+		return jsonStringify(csm);
 	}
 }

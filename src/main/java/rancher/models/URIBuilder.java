@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.codehaus.plexus.util.StringUtils;
 
 import lombok.Data;
-import rancher.util.Constant;
+import rancher.common.Constant;
 
 @Data
 public class URIBuilder {
@@ -53,14 +53,15 @@ public class URIBuilder {
 
 	public URI build() {
 		StringJoiner sj = new StringJoiner("/");
-		
+
 		sj.add("");
 		sj.add(Constant.RANCHER_API_VERSION);
-		
+
 		sj.add("projects");
-		if(StringUtils.isEmpty(this.getProjectId())) {
+		if (StringUtils.isEmpty(this.getProjectId())) {
 			try {
-				return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(), null);
+				return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(),
+						this.getQuery(), null);
 			} catch (URISyntaxException e) {
 				LOGGER.error("URISyntaxException: ", e);
 			}
@@ -68,9 +69,10 @@ public class URIBuilder {
 		sj.add(this.getProjectId());
 
 		sj.add("stacks");
-		if(StringUtils.isEmpty(this.getStackId())) {
+		if (StringUtils.isEmpty(this.getStackId())) {
 			try {
-				return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(), null);
+				return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(),
+						this.getQuery(), null);
 			} catch (URISyntaxException e) {
 				LOGGER.error("URISyntaxException: ", e);
 			}
@@ -78,9 +80,10 @@ public class URIBuilder {
 		sj.add(this.getStackId());
 
 		sj.add("services");
-		if(StringUtils.isEmpty(this.getServiceId())) {
+		if (StringUtils.isEmpty(this.getServiceId())) {
 			try {
-				return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(), null);
+				return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(),
+						this.getQuery(), null);
 			} catch (URISyntaxException e) {
 				LOGGER.error("URISyntaxException: ", e);
 			}
@@ -88,31 +91,50 @@ public class URIBuilder {
 		sj.add(this.getServiceId());
 
 		try {
-			return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(), null);
+			return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(),
+					null);
 		} catch (URISyntaxException e) {
 			LOGGER.error("URISyntaxException: ", e);
 		}
-		
+
 		return null;
 	}
-	
-	public URI buildSerivceURI() {
+
+	public URI buildServiceWithIdURL() {
 		StringJoiner sj = new StringJoiner("/");
-		
+
 		sj.add("");
 		sj.add(Constant.RANCHER_API_VERSION);
-		
+
 		sj.add("projects");
 		sj.add(this.getProjectId());
 		sj.add("services");
 		sj.add(this.getServiceId());
 
 		try {
-			return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(), null);
+			return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(),
+					null);
 		} catch (URISyntaxException e) {
 			LOGGER.error("URISyntaxException: ", e);
 		}
+
+		return null;
+	}
+
+	public URI buildCreateServiceURI() {
+		StringJoiner sj = new StringJoiner("/");
+		sj.add("");
+		sj.add(Constant.RANCHER_API_VERSION);
+		sj.add("projects");
+		sj.add(this.getProjectId());
+		sj.add("service");
 		
+		try {
+			return new URI(Constant.HTTP_PROTOCOL, null, this.getHost(), this.getPort(), sj.toString(), this.getQuery(),
+					null);
+		} catch (URISyntaxException e) {
+			LOGGER.error("URISyntaxException: ", e);
+		}
 		return null;
 	}
 }
