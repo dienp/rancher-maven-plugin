@@ -10,4 +10,5 @@ public class CreateServiceModel {
 	LaunchConfig launchConfig;
 	boolean assignServiceIpAddress;
 	boolean startOnCreate;
+	
 }
