@@ -37,7 +37,7 @@ public class Constant {
 
 	public static final class PostDataTemplate {
 		public static final String EMPTY = "{}";
-		public static final String CREATE_SERVICE = "{\"name\":\"newServiceFromPlugin\", \"stackId\":\"1st20\", \"scale\":1, \"launchConfig\":{ \"tty\":true, \"vcpu\":1, \"imageUuid\":\"docker:10.3.65.122:5000/testhub:1.0.1\" }, \"assignServiceIpAddress\":false, \"startOnCreate\":true }";
+		public static final String CREATE_SERVICE = "{\"name\":\"newServiceFromPlugin\", \"stackId\":\"1st20\", \"scale\":1, \"launchConfig\":{ \"tty\":true, \"vcpu\":1, \"imageUuid\":\"docker:10.3.65.122:5000/testhub:1.0.1\", \"labels\":{} }, \"assignServiceIpAddress\":false, \"startOnCreate\":true }";
 		public static final String UPGRAGE_SERIVCE = "{ \"inServiceStrategy\":{ \"launchConfig\":{ \"imageUuid\":\"docker\" } }, \"toServiceStrategy\":null }";
 
 	}

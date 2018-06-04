@@ -165,6 +165,7 @@ public class Util {
 		csm.getLaunchConfig().setImageUuid("docker:" + dockerImage);
 		csm.setStackId(stackId);
 		csm.setName(name);
+		csm.getLaunchConfig().getLabels().setPullImage("always");
 		return jsonStringify(csm);
 	}
 }
