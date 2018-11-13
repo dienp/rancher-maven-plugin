@@ -5,7 +5,7 @@ Upgrade a single service in specific environment
 <plugin>
     <groupId>com.github.ptdien</groupId>
     <artifactId>rancher-maven-plugin</artifactId>
-    <version>0.5.0</version>
+    <version>1.0.2</version>
 </plugin>
 ```
 
